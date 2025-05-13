@@ -1,16 +1,21 @@
 {
-  "name": "quick-translator",
+  "name": "vscode-quick-translator",
   "displayName": "QuickTranslator",
-  "description": "Ho tro dich thuat tieng Trung sang tieng Viet mot cach nhanh chong.",
-  "version": "0.0.1",
+  "description": "Được port từ phần mềm Quick Translator, hỗ trợ dịch tiếng Trung sang tiếng Việt (Hán Việt).",
+  "version": "0.0.2",
   "publisher": "dangthequan",
-  "extension-name": "quick-translator",
+  "extension-name": "vscode-quick-translator",
   "engines": {
     "vscode": "^1.100.0"
   },
+  "icon": "./images/icon.png",
   "categories": [
     "Other"
   ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/dangthequan/vscode-quick-translator-extension.git"
+  },
   "activationEvents": [],
   "main": "./dist/extension.js",
   "contributes": {

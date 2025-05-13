@@ -61,7 +61,6 @@ export function activate(context: vscode.ExtensionContext) {
 	}
 	else {
 		copyConfigFiles(appDataPath);
-		// vscode.window.showInformationMessage("App path: "+appDataPath);
 	}
 
 	initializeEngine(appDataPath);
@@ -74,8 +73,6 @@ export function activate(context: vscode.ExtensionContext) {
 	// Now provide the implementation of the command with registerCommand
 	// The commandId parameter must match the command field in package.json
 	const tranToVietnameseDisposable = vscode.commands.registerCommand('quick-translator.translate', async () => {
-		// initializeEngineIfNeed(appDataPath);
-		// Lấy đoạn văn bản được chọn
 		const editor = vscode.window.activeTextEditor;
 		if (!editor) {
 			vscode.window.showErrorMessage('Hãy mở một tệp tin và chọn một đoạn văn bản để dịch!');
@@ -91,10 +88,7 @@ export function activate(context: vscode.ExtensionContext) {
 
 		setTimeout(() => {
 			try {
-				// Sử dụng thư viện dịch của bạn
 				const translatedResult = TranslatorEngine.getInstance().chineseToHanViet(text);
-
-				// Thay thế nội dung đã chọn bằng nội dung đã dịch
 				editor.edit(editBuilder => {
 					editBuilder.replace(selection, translatedResult["result"]);
 				});
@@ -110,8 +104,6 @@ export function activate(context: vscode.ExtensionContext) {
 	});
 
 	const showVietnameseMeaningDisposable = vscode.commands.registerCommand('quick-translator.showMeaning', async () => {
-		// initializeEngineIfNeed(appDataPath);
-		// Lấy đoạn văn bản được chọn
 		const editor = vscode.window.activeTextEditor;
 		if (!editor) {
 			vscode.window.showErrorMessage('Hãy mở một tệp tin và chọn một đoạn văn bản để dịch!');
@@ -133,7 +125,6 @@ export function activate(context: vscode.ExtensionContext) {
 
 		setTimeout(() => {
 			try {
-				// Sử dụng thư viện dịch của bạn
 				const translatedResult = TranslatorEngine.getInstance().chineseToHanViet(text);
 				if (text == translatedResult["result"]) {
 					translateWithGoogle(text);
@@ -150,7 +141,6 @@ export function activate(context: vscode.ExtensionContext) {
 	});
 
 	const openAppPathDisposable = vscode.commands.registerCommand('quick-translator.openAppPath', async () => {
-		// initializeEngineIfNeed(appDataPath);
 		setTimeout(() => {
 			try {
 				vscode.commands.executeCommand(`vscode.openFolder`, context.globalStorageUri);
