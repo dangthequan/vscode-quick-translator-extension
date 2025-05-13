@@ -2,7 +2,7 @@
   "name": "vscode-quick-translator",
   "displayName": "QuickTranslator",
   "description": "Được port từ phần mềm Quick Translator, hỗ trợ dịch tiếng Trung sang tiếng Việt (Hán Việt).",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "publisher": "dangthequan",
   "extension-name": "vscode-quick-translator",
   "engines": {
@@ -22,23 +22,27 @@
     "commands": [
       {
         "command": "quick-translator.translate",
-        "title": "Dịch"
+        "title": "1 - Dịch"
       },
       {
         "command": "quick-translator.showMeaning",
-        "title": "Xem nghĩa"
+        "title": "2 - Xem nghĩa"
       },
       {
         "command": "quick-translator.openAppPath",
-        "title": "Cài đặt cấu hình"
+        "title": "6 - Mở thư mục cấu hình"
       },
       {
         "command": "quick-translator.translateWithGoogle",
-        "title": "Dịch với Google"
+        "title": "5 - Dịch với Google"
       },
       {
         "command": "quick-translator.translateWithChatGPT",
-        "title": "Dịch với ChatGPT"
+        "title": "4 - Dịch với ChatGPT"
+      },
+      {
+        "command": "quick-translator.translateWithGithubCopilot",
+        "title": "3 - Dịch với Github Copilot (Khuyên dùng)"
       }
     ],
     "menus": {
@@ -66,6 +70,10 @@
           "when": "editorHasSelection"
         },
         {
+          "command": "quick-translator.translateWithGithubCopilot",
+          "when": "editorHasSelection"
+        },
+        {
           "command": "quick-translator.openAppPath"
         }
       ]
@@ -88,6 +96,10 @@
       {
         "command": "quick-translator.translateWithChatGPT",
         "key": "ctrl+alt+c"
+      },
+      {
+        "command": "quick-translator.translateWithGithubCopilot",
+        "key": "ctrl+alt+p"
       },
       {
         "command": "quick-translator.showMeaning",

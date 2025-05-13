@@ -8,10 +8,11 @@ import {readFile} from './io/IO';
 
 const GOOGLE_TRANSLATE_SELECTION = "Dịch với Google";
 const CHAT_GPT_SELECTION = "Dịch với ChatGPT";
+const GITHUB_COPILOT_SELECTION = "Dịch với Github Copilot";
 const GOOGLE_TRANSLATE_URI = 'https://translate.google.com.mx/?s=false&sl=auto&tl=vi&op=translate&text=';
 const CHAT_GPT_URI = "https://chatgpt.com/?q=";
-const CHAT_GPT_TERM = "<CHAT_GPT_TERM>";
-const CHAT_GPT_MESSAGE = "Bạn là chuyên gia dịch thuật tiếng Trung sang tiếng Việt, hãy dịch từ sau sang tiếng Việt: \""+CHAT_GPT_TERM+"\"";
+const TRANSLATE_TERM = "<CHAT_GPT_TERM>";
+const PROMPT_MESSAGE = "Dịch \""+TRANSLATE_TERM+"\" sang tiếng Việt";
 
 function copyConfigFiles(destinationPath: string) {
     const sourcePath = path.join(__dirname, 'configs');
@@ -50,16 +51,22 @@ function displayTranslationFailureMessage(text: string) {
 		else if(selection === CHAT_GPT_SELECTION) {
 			translateWithChatGPT(text);
 		}
+		else if (selection === GITHUB_COPILOT_SELECTION) {
+			translateWithGithubCopilot(text);
+		}
 	});
 }
 
 function displayTranslationSuccessMessage(text: string, translatedText: string) {
-	vscode.window.showInformationMessage("Bản dịch: "+translatedText, CHAT_GPT_SELECTION, GOOGLE_TRANSLATE_SELECTION).then(selection => {
+	vscode.window.showInformationMessage("Bản dịch: "+translatedText, GITHUB_COPILOT_SELECTION, CHAT_GPT_SELECTION, GOOGLE_TRANSLATE_SELECTION).then(selection => {
 		if (selection === GOOGLE_TRANSLATE_SELECTION) {
 			translateWithGoogle(text);
 		}
 		else if(selection === CHAT_GPT_SELECTION) {
 			translateWithChatGPT(text);
+		}
+		else if (selection === GITHUB_COPILOT_SELECTION) {
+			translateWithGithubCopilot(text);
 		}
 	});
 }
@@ -99,7 +106,11 @@ function translateWithGoogle(text: string) {
 }
 
 function translateWithChatGPT(text: string) {
-	vscode.env.openExternal(vscode.Uri.parse(CHAT_GPT_URI+encodeURI(CHAT_GPT_MESSAGE.replace(CHAT_GPT_TERM, text))));
+	vscode.env.openExternal(vscode.Uri.parse(CHAT_GPT_URI+encodeURI(PROMPT_MESSAGE.replace(TRANSLATE_TERM, text))));
+}
+
+function translateWithGithubCopilot(text: string) {
+	vscode.commands.executeCommand('workbench.action.chat.open', PROMPT_MESSAGE.replace(TRANSLATE_TERM, text));
 }
 
 // This method is called when your extension is activated
@@ -252,13 +263,38 @@ export function activate(context: vscode.ExtensionContext) {
 		}, 500)
 		
 	});
+
+	const tranWithGithubCopilotDisposable = vscode.commands.registerCommand('quick-translator.translateWithGithubCopilot', async () => {
+		const editor = vscode.window.activeTextEditor;
+		if (!editor) {
+			vscode.window.showErrorMessage('Hãy mở một tệp tin và chọn một đoạn văn bản để dịch!');
+			return;
+		}
+
+		const selection = editor.selection;
+		const text = editor.document.getText(selection);
+		if (!text) {
+			vscode.window.showErrorMessage('Hãy chọn một đoạn văn bản để bắt đầu dịch!');
+			return;
+		}
+
+		setTimeout(() => {
+			try {
+				translateWithGithubCopilot(text);
+			} catch (error) {
+				console.error(error);
+				vscode.window.showErrorMessage('Rất tiếc! Có lỗi xảy ra trong quá trình dịch.');
+			}
+		}, 500)
+		
+	});
 	
 	context.subscriptions.push(tranToVietnameseDisposable);
 	context.subscriptions.push(showVietnameseMeaningDisposable);
 	context.subscriptions.push(openAppPathDisposable);
 	context.subscriptions.push(tranWithGoogleDisposable);
 	context.subscriptions.push(tranWithChatGPTDisposable);
-	
+	context.subscriptions.push(tranWithGithubCopilotDisposable);
 }
 
 // This method is called when your extension is deactivated
