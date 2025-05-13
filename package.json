@@ -1,0 +1,103 @@
+{
+  "name": "quick-translator",
+  "displayName": "QuickTranslator",
+  "description": "Ho tro dich thuat tieng Trung sang tieng Viet mot cach nhanh chong.",
+  "version": "0.0.1",
+  "publisher": "dangthequan",
+  "extension-name": "quick-translator",
+  "engines": {
+    "vscode": "^1.100.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "quick-translator.translate",
+        "title": "Dịch"
+      },
+      {
+        "command": "quick-translator.showMeaning",
+        "title": "Xem nghĩa"
+      },
+      {
+        "command": "quick-translator.openAppPath",
+        "title": "Cài đặt cấu hình"
+      }
+    ],
+    "menus": {
+      "editor/context": [
+        {
+          "submenu": "quickTranslator.submenu",
+          "group": "quickTranslator"
+        }
+      ],
+      "quickTranslator.submenu": [
+        {
+          "command": "quick-translator.translate",
+          "when": "editorHasSelection"
+        },
+        {
+          "command": "quick-translator.showMeaning",
+          "when": "editorHasSelection"
+        },
+        {
+          "command": "quick-translator.openAppPath"
+        }
+      ]
+    },
+    "submenus": [
+      {
+        "id": "quickTranslator.submenu",
+        "label": "Quick Translator"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "quick-translator.translate",
+        "key": "ctrl+alt+t"
+      },
+      {
+        "command": "quick-translator.showMeaning",
+        "key": "ctrl+alt+m"
+      },
+      {
+        "command": "quick-translator.openAppPath",
+        "key": "ctrl+alt+a"
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "yarn run package",
+    "compile": "webpack",
+    "watch": "webpack --watch",
+    "package": "webpack --mode production --devtool hidden-source-map",
+    "compile-tests": "tsc -p . --outDir out",
+    "watch-tests": "tsc -p . -w --outDir out",
+    "pretest": "yarn run compile-tests && yarn run compile && yarn run lint",
+    "lint": "eslint src",
+    "test": "vscode-test"
+  },
+  "devDependencies": {
+    "@types/lodash": "^4.17.16",
+    "@types/mocha": "^10.0.10",
+    "@types/node": "20.x",
+    "@types/vscode": "^1.100.0",
+    "@typescript-eslint/eslint-plugin": "^8.31.1",
+    "@typescript-eslint/parser": "^8.31.1",
+    "@vscode/test-cli": "^0.0.10",
+    "@vscode/test-electron": "^2.5.2",
+    "copy-webpack-plugin": "^13.0.0",
+    "eslint": "^9.25.1",
+    "ts-loader": "^9.5.2",
+    "typescript": "^5.8.3",
+    "webpack": "^5.99.7",
+    "webpack-cli": "^6.0.1"
+  },
+  "dependencies": {
+    "lodash": "^4.17.21"
+  }
+}
