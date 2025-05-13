@@ -2,7 +2,7 @@
   "name": "vscode-quick-translator",
   "displayName": "QuickTranslator",
   "description": "Được port từ phần mềm Quick Translator, hỗ trợ dịch tiếng Trung sang tiếng Việt (Hán Việt).",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "publisher": "dangthequan",
   "extension-name": "vscode-quick-translator",
   "engines": {
@@ -31,6 +31,14 @@
       {
         "command": "quick-translator.openAppPath",
         "title": "Cài đặt cấu hình"
+      },
+      {
+        "command": "quick-translator.translateWithGoogle",
+        "title": "Dịch với Google"
+      },
+      {
+        "command": "quick-translator.translateWithChatGPT",
+        "title": "Dịch với ChatGPT"
       }
     ],
     "menus": {
@@ -50,6 +58,14 @@
           "when": "editorHasSelection"
         },
         {
+          "command": "quick-translator.translateWithGoogle",
+          "when": "editorHasSelection"
+        },
+        {
+          "command": "quick-translator.translateWithChatGPT",
+          "when": "editorHasSelection"
+        },
+        {
           "command": "quick-translator.openAppPath"
         }
       ]
@@ -64,6 +80,14 @@
       {
         "command": "quick-translator.translate",
         "key": "ctrl+alt+t"
+      },
+      {
+        "command": "quick-translator.translateWithGoogle",
+        "key": "ctrl+alt+g"
+      },
+      {
+        "command": "quick-translator.translateWithChatGPT",
+        "key": "ctrl+alt+c"
       },
       {
         "command": "quick-translator.showMeaning",
