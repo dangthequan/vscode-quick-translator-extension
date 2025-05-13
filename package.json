@@ -2,7 +2,7 @@
   "name": "vscode-quick-translator",
   "displayName": "QuickTranslator",
   "description": "Được port từ phần mềm Quick Translator, hỗ trợ dịch tiếng Trung sang tiếng Việt (Hán Việt).",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "publisher": "dangthequan",
   "extension-name": "vscode-quick-translator",
   "engines": {

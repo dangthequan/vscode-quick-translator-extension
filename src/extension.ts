@@ -53,6 +53,17 @@ function displayTranslationFailureMessage(text: string) {
 	});
 }
 
+function displayTranslationSuccessMessage(text: string, translatedText: string) {
+	vscode.window.showInformationMessage("Bản dịch: "+translatedText, CHAT_GPT_SELECTION, GOOGLE_TRANSLATE_SELECTION).then(selection => {
+		if (selection === GOOGLE_TRANSLATE_SELECTION) {
+			translateWithGoogle(text);
+		}
+		else if(selection === CHAT_GPT_SELECTION) {
+			translateWithChatGPT(text);
+		}
+	});
+}
+
 // Hàm tạo nội dung HTML cho Webview
 function getWebviewContent(url: string): string {
     return `
@@ -171,7 +182,7 @@ export function activate(context: vscode.ExtensionContext) {
 					displayTranslationFailureMessage(text);
 				}
 				else {
-					vscode.window.showInformationMessage("Bản dịch: "+translatedResult["result"]);
+					displayTranslationSuccessMessage(text, translatedResult["result"]);
 				}
 				
 			} catch (error) {
