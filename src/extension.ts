@@ -5,6 +5,11 @@ import * as fs from 'fs';
 import * as path from 'path';
 import TranslatorEngine from './modules/TranslatorEngine/TranslatorEngine';
 import {readFile} from './io/IO';
+import { registerUriHandler } from './handlers/DeeplinkHandler';
+import { AES_SEED, DataField } from './constants/Constants';
+import { translateWithChatGPTApi } from './vendors/ChatGPT';
+import { getSettingsPopupContent, showWebPopup } from './popups/Popups';
+import { aesEncrypt } from './crypto/Crypto';
 
 const GOOGLE_TRANSLATE_SELECTION = "Dịch với Google";
 const CHAT_GPT_SELECTION = "Dịch với ChatGPT";
@@ -43,13 +48,13 @@ async function initializeEngine(appDataPath: string) {
 	TranslatorEngine.getInstance().setHanVietDictionary(hanVietDictionary);	
 }
 
-function displayTranslationFailureMessage(text: string) {
-	vscode.window.showInformationMessage("Không có từ nào được dịch! Bạn có muốn dịch bằng ChatGPT hoặc Google ?", CHAT_GPT_SELECTION, GOOGLE_TRANSLATE_SELECTION).then(selection => {
+function displayTranslationFailureMessage(context: vscode.ExtensionContext, text: string) {
+	vscode.window.showInformationMessage("Không có từ nào được dịch! Bạn có muốn dịch bằng ChatGPT, Github Copilot hay Google ?", CHAT_GPT_SELECTION, GITHUB_COPILOT_SELECTION, GOOGLE_TRANSLATE_SELECTION).then(selection => {
 		if (selection === GOOGLE_TRANSLATE_SELECTION) {
 			translateWithGoogle(text);
 		}
 		else if(selection === CHAT_GPT_SELECTION) {
-			translateWithChatGPT(text);
+			translateWithChatGPT(context, text);
 		}
 		else if (selection === GITHUB_COPILOT_SELECTION) {
 			translateWithGithubCopilot(text);
@@ -57,61 +62,97 @@ function displayTranslationFailureMessage(text: string) {
 	});
 }
 
-function displayTranslationSuccessMessage(text: string, translatedText: string) {
-	vscode.window.showInformationMessage("Bản dịch: "+translatedText, GITHUB_COPILOT_SELECTION, CHAT_GPT_SELECTION, GOOGLE_TRANSLATE_SELECTION).then(selection => {
+function displayTranslationSuccessMessage(context: vscode.ExtensionContext, text: string, translatedText: string) {
+	vscode.window.showInformationMessage("Bản dịch: "+translatedText, CHAT_GPT_SELECTION, GITHUB_COPILOT_SELECTION, GOOGLE_TRANSLATE_SELECTION).then(selection => {
 		if (selection === GOOGLE_TRANSLATE_SELECTION) {
 			translateWithGoogle(text);
 		}
 		else if(selection === CHAT_GPT_SELECTION) {
-			translateWithChatGPT(text);
+			translateWithChatGPT(context, text);
 		}
 		else if (selection === GITHUB_COPILOT_SELECTION) {
 			translateWithGithubCopilot(text);
 		}
 	});
-}
-
-// Hàm tạo nội dung HTML cho Webview
-function getWebviewContent(url: string): string {
-    return `
-        <!DOCTYPE html>
-        <html lang="en">
-        <head>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>Webview</title>
-        </head>
-        <body>
-            <iframe src="${url}" width="100%" height="100%" frameborder="0" style="border: none;"></iframe>
-        </body>
-        </html>
-    `;
-}
-
-function openEmbeddedWebview(webviewId:string, title: string, url: string) {
-	// Create and show a new webview
-	const panel = vscode.window.createWebviewPanel(
-		webviewId, // Identifies the type of the webview. Used internally
-		title, // Title of the panel displayed to the user
-		vscode.ViewColumn.One, // Editor column to show the new webview panel in.
-		 {
-			enableScripts: true, // Cho phép chạy JavaScript trong Webview
-		}
-	);
-	panel.webview.html = getWebviewContent(url);
 }
 
 function translateWithGoogle(text: string) {
 	vscode.env.openExternal(vscode.Uri.parse(GOOGLE_TRANSLATE_URI+encodeURI(text)));
 }
 
-function translateWithChatGPT(text: string) {
-	vscode.env.openExternal(vscode.Uri.parse(CHAT_GPT_URI+encodeURI(PROMPT_MESSAGE.replace(TRANSLATE_TERM, text))));
+function openAppDataFolder(context: vscode.ExtensionContext) {
+	try {
+		vscode.commands.executeCommand(`vscode.openFolder`, context.globalStorageUri);
+	} catch (error) {
+		console.error("openAppDataFolder >> error: ", error);
+		vscode.window.showErrorMessage('Rất tiếc! Có lỗi xảy ra trong quá trình mở thư mục.');
+	}
+}
+
+function saveSettings(context: vscode.ExtensionContext, message: {[key: string] : any}) {
+	const data = message.data || {};
+	const {chatGPTApiSecretKey, useChatGPTApi, chatGPTModel, chatGPTSystemPrompt} = data;
+	const encryptedChatGPTApiSecretKey = aesEncrypt(chatGPTApiSecretKey, AES_SEED);
+
+	context.globalState.update(DataField.ChatGPTApiSecretKey, encryptedChatGPTApiSecretKey);
+	context.globalState.update(DataField.ChatGPTSystemPrompt, chatGPTSystemPrompt);
+	context.globalState.update(DataField.UseChatGPTApi, useChatGPTApi);
+	context.globalState.update(DataField.ChatGPTModel, chatGPTModel);
+	vscode.window.showInformationMessage("Cấu hình mới đã được lưu! "+JSON.stringify(data));
+}
+
+function onProcessSettingsCommand(context: vscode.ExtensionContext, message: { [key : string] : any}) {
+	if (message.command === "saveSettings") {
+		saveSettings(context, message);
+	} 
+	else if (message.command === "openAppDataFolder") {
+		openAppDataFolder(context);
+	}
+}
+
+async function translateWithChatGPT(context: vscode.ExtensionContext, text: string) {
+	const useChatGPTApi = context.globalState.get<boolean>(DataField.UseChatGPTApi, false);
+	const apiKey = context.globalState.get<string>(DataField.ChatGPTApiSecretKey, "");
+	if (useChatGPTApi && apiKey && apiKey.length > 0) {
+		await vscode.window.withProgress(
+        {
+            location: vscode.ProgressLocation.Notification, // Hiển thị ở góc dưới cùng
+            title: "Đang dịch với ChatGPT...",
+            cancellable: false, // Không cho phép hủy
+        },
+        async (progress) => {
+            progress.report({ increment: 0, message: "Đang gửi yêu cầu..." });
+
+            try {
+                const translatedText = await translateWithChatGPTApi(context, text);
+                progress.report({ increment: 50, message: "Đang xử lý kết quả..." });
+
+                const editor = vscode.window.activeTextEditor;
+                if (translatedText && editor) {
+                    const selection = editor.selection;
+                    editor.edit((editBuilder) => {
+                        editBuilder.replace(selection, translatedText);
+                    });
+                }
+
+                progress.report({ increment: 100, message: "Hoàn thành!" });
+                vscode.window.showInformationMessage("Dịch thành công!");
+            } catch (error) {
+                console.error(error);
+                vscode.window.showErrorMessage("Rất tiếc! Có lỗi xảy ra trong quá trình dịch.");
+            }
+        });
+	}
+	else {
+		vscode.env.openExternal(vscode.Uri.parse(CHAT_GPT_URI+encodeURI(PROMPT_MESSAGE.replace(TRANSLATE_TERM, text))));
+	}
+	
 }
 
 function translateWithGithubCopilot(text: string) {
 	vscode.commands.executeCommand('workbench.action.chat.open', PROMPT_MESSAGE.replace(TRANSLATE_TERM, text));
 }
+
 
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
@@ -127,6 +168,7 @@ export function activate(context: vscode.ExtensionContext) {
 	}
 
 	initializeEngine(appDataPath);
+	registerUriHandler();
 
 	// Use the console to output diagnostic information (console.log) and errors (console.error)
 	// This line of code will only be executed once when your extension is activated
@@ -156,7 +198,7 @@ export function activate(context: vscode.ExtensionContext) {
 					editBuilder.replace(selection, translatedResult["result"]);
 				});
 				if (text == translatedResult["result"]) {
-					displayTranslationFailureMessage(text);
+					displayTranslationFailureMessage(context, text);
 				}
 			} catch (error) {
 				console.error(error);
@@ -190,10 +232,10 @@ export function activate(context: vscode.ExtensionContext) {
 			try {
 				const translatedResult = TranslatorEngine.getInstance().chineseToHanViet(text);
 				if (text == translatedResult["result"]) {
-					displayTranslationFailureMessage(text);
+					displayTranslationFailureMessage(context, text);
 				}
 				else {
-					displayTranslationSuccessMessage(text, translatedResult["result"]);
+					displayTranslationSuccessMessage(context, text, translatedResult["result"]);
 				}
 				
 			} catch (error) {
@@ -255,7 +297,7 @@ export function activate(context: vscode.ExtensionContext) {
 
 		setTimeout(() => {
 			try {
-				translateWithChatGPT(text);
+				translateWithChatGPT(context, text);
 			} catch (error) {
 				console.error(error);
 				vscode.window.showErrorMessage('Rất tiếc! Có lỗi xảy ra trong quá trình dịch.');
@@ -288,6 +330,17 @@ export function activate(context: vscode.ExtensionContext) {
 		}, 500)
 		
 	});
+
+	let settingsWebContent = getSettingsPopupContent(context);
+	showWebPopup(context, {
+		id: 'settingsWebview',
+		command: 'quick-translator.showSettings',
+		title: "Cài đặt cấu hình",
+		html: settingsWebContent,
+		onMessage: (message: { [key : string] : any}) => {
+			onProcessSettingsCommand(context, message);
+		}
+	})
 	
 	context.subscriptions.push(tranToVietnameseDisposable);
 	context.subscriptions.push(showVietnameseMeaningDisposable);
@@ -295,6 +348,7 @@ export function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(tranWithGoogleDisposable);
 	context.subscriptions.push(tranWithChatGPTDisposable);
 	context.subscriptions.push(tranWithGithubCopilotDisposable);
+	
 }
 
 // This method is called when your extension is deactivated

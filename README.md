@@ -1,10 +1,10 @@
 # Quick Translator extension for Visual Studio Code
 
-Đây là một extension trên Visual Studio Code được port từ phần mềm Quick Translator, hỗ trợ dịch tiếng Trung sang tiếng Việt (Hán Việt).
+Công cụ hỗ trợ dịch hán Việt tương tự phần mềm Quick Translator, hỗ trợ thêm dịch với ChatGPT, Github Copilot, Google Translate. Phù hợp cho các bạn dịch game tiếng Trung.
 
 ## Tính năng & hướng dẫn sử dụng
 
-Hiện tại extension mới chỉ hỗ trợ dịch và xem trước dịch nghĩa, các chức năng khác sẽ được cập nhật trong các phiên bản sau.
+Extension hỗ trợ dịch, xem nghĩa Hán Việt, dịch với ChatGPT (hỗ trợ ChatGPT API), Github Copilot và Google Translate.
 
 Hướng dẫn sử dụng:
 ```
@@ -17,12 +17,15 @@ Bước 2: Bấm chuột phải vào vùng văn bản để hiển thị menu, s
 
 + Xem nghĩa: Vùng văn bản không bị ảnh hưởng, chỉ hiển thị bản dịch nghĩa.
 ```
-![](https://i.ibb.co/scsmvW1/quick-translator-usage.png)
+![](https://i.ibb.co/KxTVfKMB/quicktranslator-menu.png)
+
+Màn hình Cài đặt cấu hình (Cài đặt dịch ChatGPT sử dụng API)
+![](https://i.ibb.co/8nktBSws/quicktranslator-settings.png)
 
 
 ## Tham khảo
 
-Phần core của mã nguồn được chuyển thể từ ngôn ngữ C# của tác giả **ngoctay** sang Typescript.
+Phần core dịch Hán Việt được chuyển thể từ ngôn ngữ C# của tác giả **ngoctay** sang Typescript.
 
 Mã nguồn tham khảo:
 ```

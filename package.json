@@ -1,8 +1,8 @@
 {
   "name": "vscode-quick-translator",
   "displayName": "QuickTranslator",
-  "description": "Được port từ phần mềm Quick Translator, hỗ trợ dịch tiếng Trung sang tiếng Việt (Hán Việt).",
-  "version": "0.0.5",
+  "description": "Công cụ hỗ trợ dịch hán Việt tương tự phần mềm Quick Translator, hỗ trợ thêm dịch với ChatGPT, Github Copilot, Google Translate. Phù hợp cho các bạn dịch game tiếng Trung",
+  "version": "0.0.6",
   "publisher": "dangthequan",
   "extension-name": "vscode-quick-translator",
   "engines": {
@@ -16,33 +16,39 @@
     "type": "git",
     "url": "https://github.com/dangthequan/vscode-quick-translator-extension.git"
   },
-  "activationEvents": [],
+  "activationEvents": [
+    "onUri"
+  ],
   "main": "./dist/extension.js",
   "contributes": {
     "commands": [
       {
+        "command": "quick-translator.handleUri",
+        "title": "Handle URI"
+      },
+      {
         "command": "quick-translator.translate",
-        "title": "1 - Dịch"
+        "title": "1 - Dịch sang Hán Việt"
       },
       {
         "command": "quick-translator.showMeaning",
-        "title": "2 - Xem nghĩa"
+        "title": "2 - Xem nghĩa Hán Việt"
       },
       {
-        "command": "quick-translator.openAppPath",
-        "title": "6 - Mở thư mục cấu hình"
+        "command": "quick-translator.translateWithChatGPT",
+        "title": "3 - Dịch với ChatGPT"
+      },
+      {
+        "command": "quick-translator.translateWithGithubCopilot",
+        "title": "4 - Dịch với Github Copilot"
       },
       {
         "command": "quick-translator.translateWithGoogle",
         "title": "5 - Dịch với Google"
       },
       {
-        "command": "quick-translator.translateWithChatGPT",
-        "title": "4 - Dịch với ChatGPT"
-      },
-      {
-        "command": "quick-translator.translateWithGithubCopilot",
-        "title": "3 - Dịch với Github Copilot (Khuyên dùng)"
+        "command": "quick-translator.showSettings",
+        "title": "Cài đặt cấu hình"
       }
     ],
     "menus": {
@@ -74,7 +80,7 @@
           "when": "editorHasSelection"
         },
         {
-          "command": "quick-translator.openAppPath"
+          "command": "quick-translator.showSettings"
         }
       ]
     },
@@ -106,7 +112,7 @@
         "key": "ctrl+alt+m"
       },
       {
-        "command": "quick-translator.openAppPath",
+        "command": "quick-translator.showSettings",
         "key": "ctrl+alt+a"
       }
     ]
@@ -139,6 +145,7 @@
     "webpack-cli": "^6.0.1"
   },
   "dependencies": {
-    "lodash": "^4.17.21"
+    "lodash": "^4.17.21",
+    "qs": "^6.14.0"
   }
 }
